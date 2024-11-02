@@ -5,9 +5,8 @@ import time
 import os
 from datetime import datetime
 import re
+import subprocess
 
-# command to run:
-# python test.py
 
 def load_api_key():
     with open('openai_api_key.txt', 'r') as file:
@@ -62,15 +61,23 @@ def print_prod(is_prod):
         return "unknown"
 
 def notify_user(is_prod):
-    notification = "ChatGPT failed to determine whether you are productive or not"
+    if is_prod != 0: return
+    
+    text = "ChatGPT failed to determine whether you are productive or not"
     if is_prod == 1:
-        notification = "Good job being productive"
+        text = "Good job being productive"
     elif is_prod == 0:
-        notification = "GET BACK ON TASK!"
-    command = f'''
-    osascript -e 'display notification "{notification}" with title "Productivity Monitor"'
-    '''
-    os.system(command)
+        text = "GET BACK ON TASK!"
+    
+    title = "Productivity Monitor"
+
+    script = f"""
+    display dialog "{text}" ¬
+    with title "{title}" ¬
+    with icon caution ¬""" + """
+    buttons {"OK"}
+    """
+    subprocess.Popen(["osascript", "-e", script], shell=False)
 
 def ask_chatgpt(question):
     response = client.chat.completions.create(
