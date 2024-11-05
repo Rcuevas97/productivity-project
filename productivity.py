@@ -79,12 +79,12 @@ def notify_user(is_prod):
     """
     subprocess.Popen(["osascript", "-e", script], shell=False)
 
-def ask_chatgpt(question):
+def ask_chatgpt(prompt):
     response = client.chat.completions.create(
         messages=[
             {
                 "role": "user",
-                "content": question,
+                "content": prompt,
             }
         ],
         model="gpt-4o-mini",
@@ -96,7 +96,9 @@ def remove_phrases(text):
         "Productivity Monitor",
         "ChatGPT failed to determine whether you are productive or not",
         "Good job being productive",
-        "GET BACK ON TASK!"
+        "GET BACK ON TASK!",
+        "productive",
+        "unproductive"
     ]
     for phrase in phrases_to_remove:
         pattern = re.compile(re.escape(phrase), re.IGNORECASE)
@@ -111,9 +113,13 @@ def productivity_check():
     extracted_text = remove_phrases(extracted_text)
     
     middle = time.time()
+    replace_keyword = "<start text>"
     
-    question = "This is a screenshot of a user's computer with the following text <start text>" + extracted_text + "<end text> Is the user being productive? Think through this step by step and identify key words that might mean the user is being productive or not. Consider that unintelligible text could be due to errors in recognising text on the users screen so try to ignore it. Your response is being used in an automated script. In order to make the script run properly, the last thing you say must be either 'In conclusion, the user is being productive.' or 'In conclusion the user is being unproductive.'"
-    answer = ask_chatgpt(question)
+    with open('gpt_judge_prompt_01.txt') as file:
+        prompt_template = file.read()
+    prompt = prompt_template.replace(replace_keyword, extracted_text, 1)
+    #question = "This is a screenshot of a user's computer with the following text <start text>" + extracted_text + "<end text> Is the user being productive? Think through this step by step and identify key words that might mean the user is being productive or not. Consider that unintelligible text could be due to errors in recognising text on the users screen so try to ignore it. Your response is being used in an automated script. In order to make the script run properly, the last thing you say must be either 'In conclusion, the user is being productive.' or 'In conclusion the user is being unproductive.'"
+    answer = ask_chatgpt(prompt)
     last_word = answer.split()[-1].lower()
     is_prod = -1
     
