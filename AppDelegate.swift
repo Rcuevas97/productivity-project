@@ -1,3 +1,10 @@
+/*
+To run the code:
+swiftc -o StatusMenuApp AppDelegate.swift -framework AppKit
+./StatusMenuApp
+
+*/
+
 import Cocoa
 
 class AppDelegate: NSObject, NSApplicationDelegate {
